@@ -30,16 +30,19 @@ class _PurchasePowerScreenState extends State<PurchasePowerScreen> {
   String _paymentReference = "";
   bool _isLoading = false;
   List<dynamic> _history = [];
-  @override
-void initState() {
+ @override
+ void initState() {
   super.initState();
 
-  final reference = Uri.base.queryParameters['reference'];
+  final params = Uri.base.queryParameters;
+  final reference = params['reference'] ?? params['trxref'];
 
   if (reference != null && reference.isNotEmpty) {
-    verifyPayment(reference);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      verifyPayment(reference);
+    });
+   }
   }
-}
 
   Future<void> buyPower(int amount) async {
   setState(() {
