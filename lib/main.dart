@@ -55,7 +55,7 @@ void initState() {
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         "device_id": "DEV001",
-        "amount_paid": amount.toDouble(),
+        "amount_paid": amount,
       }),
     );
 
