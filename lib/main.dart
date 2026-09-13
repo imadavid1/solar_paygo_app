@@ -28,6 +28,7 @@ class _PurchasePowerScreenState extends State<PurchasePowerScreen> {
   String _generatedToken = "";
   String _message = "";
   String _paymentReference = "";
+  String? _accessToken;
   bool _isLoading = false;
   List<dynamic> _history = [];
  @override
@@ -43,6 +44,21 @@ class _PurchasePowerScreenState extends State<PurchasePowerScreen> {
     });
    }
   }
+  Future<void> loginCustomer() async {
+  final response = await http.post(
+    Uri.parse('https://solar-backend-q2fo.onrender.com/login'),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({
+      'email': 'securetest@example.com',
+      'password': 'TestPassword123',
+    }),
+  );
+
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+    _accessToken = data['access_token'];
+  }
+}
 
   Future<void> buyPower(int amount) async {
   setState(() {
@@ -53,14 +69,21 @@ class _PurchasePowerScreenState extends State<PurchasePowerScreen> {
   });
 
   try {
+    await loginCustomer();
+    if (_accessToken == null || _accessToken!.isEmpty) {
+      throw Exception("Login failed");
+}
     final createResponse = await http.post(
-      Uri.parse('https://solar-backend-q2fo.onrender.com/create-payment'),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "device_id": "DEV001",
-        "amount_paid": amount.toString(),
-      }),
-    );
+  Uri.parse('https://solar-backend-q2fo.onrender.com/create-payment'),
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer $_accessToken",
+  },
+  body: jsonEncode({
+    "device_id": "TEST-DEV-999",
+    "amount_paid": amount.toString(),
+  }),
+);
 
     final createData = jsonDecode(createResponse.body);
 
@@ -102,9 +125,17 @@ Future<void> verifyPayment(String reference) async {
   });
 
   try {
+    await loginCustomer();
+
+  if (_accessToken == null || _accessToken!.isEmpty) {
+    throw Exception("Login failed");
+  }
     final verifyResponse = await http.post(
       Uri.parse('https://solar-backend-q2fo.onrender.com/verify-payment'),
-      headers: {"Content-Type": "application/json"},
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $_accessToken",
+},
       body: jsonEncode({
         "reference": reference,
       }),
@@ -189,7 +220,7 @@ Future<void> loadHistory() async {
             ),
             const SizedBox(height: 10),
             const Text(
-              "Device ID: DEV001",
+              "Device ID: TEST-DEV-999",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
