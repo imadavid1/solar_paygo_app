@@ -1,18 +1,94 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'models/auth_session.dart';
+import 'screens/provider_dashboard_screen.dart';
+import 'screens/provider_login_screen.dart';
 
 void main() => runApp(const SolarApp());
 
-class SolarApp extends StatelessWidget {
+class SolarApp extends StatefulWidget {
   const SolarApp({super.key});
 
   @override
+  State<SolarApp> createState() => _SolarAppState();
+}
+
+class _SolarAppState extends State<SolarApp> {
+  AuthSession? _providerSession;
+
+  bool get _isProviderPortal {
+    return Uri.base.queryParameters['portal'] == 'provider';
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
+      title: 'Nigeria Solar PAYGO',
       debugShowCheckedModeBanner: false,
-      home: PurchasePowerScreen(),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF0B6E4F),
+          primary: const Color(0xFF0B7A55),
+          surface: Colors.white,
+        ),
+        useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFFF3F6F5),
+        fontFamily: 'Segoe UI',
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 17,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFFD9E3DF)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFFD9E3DF)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(
+              color: Color(0xFF0B7A55),
+              width: 1.5,
+            ),
+          ),
+        ),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFF0B7A55),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+      ),
+      home: _isProviderPortal
+          ? _providerSession == null
+              ? ProviderLoginScreen(
+                  onLoginSuccess: (session) {
+                    setState(() {
+                      _providerSession = session;
+                    });
+                  },
+                )
+              : ProviderDashboardScreen(
+                  session: _providerSession!,
+                  onLogout: () {
+                    setState(() {
+                      _providerSession = null;
+                    });
+                  },
+                )
+          : const PurchasePowerScreen(),
     );
   }
 }
@@ -27,7 +103,6 @@ class PurchasePowerScreen extends StatefulWidget {
 class _PurchasePowerScreenState extends State<PurchasePowerScreen> {
   String _generatedToken = "";
   String _message = "";
-  String _paymentReference = "";
   String? _accessToken;
   bool _isLoading = false;
   List<dynamic> _history = [];
@@ -65,7 +140,6 @@ class _PurchasePowerScreenState extends State<PurchasePowerScreen> {
     _isLoading = true;
     _generatedToken = "";
     _message = "";
-    _paymentReference = "";
   });
 
   try {
@@ -89,9 +163,6 @@ class _PurchasePowerScreenState extends State<PurchasePowerScreen> {
 
     if (createResponse.statusCode == 200) {
       final authorizationUrl = createData['authorization_url'];
-      final reference = createData['reference'];
-
-      _paymentReference = reference;
 
       final Uri url = Uri.parse(authorizationUrl);
 
