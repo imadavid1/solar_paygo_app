@@ -25,6 +25,7 @@ class _CustomerPortalScreenState extends State<CustomerPortalScreen> {
   String _message = '';
   String? _accessToken;
   bool _isLoading = false;
+  int? _buyingAmount;
   bool _showHistory = false;
   List<dynamic> _history = [];
 
@@ -55,6 +56,7 @@ class _CustomerPortalScreenState extends State<CustomerPortalScreen> {
   Future<void> _buyPower(int amount) async {
     setState(() {
       _isLoading = true;
+      _buyingAmount = amount;
       _generatedToken = '';
       _message = '';
     });
@@ -90,7 +92,12 @@ class _CustomerPortalScreenState extends State<CustomerPortalScreen> {
     } catch (_) {
       if (mounted) setState(() => _message = 'Could not connect to the payment service.');
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _buyingAmount = null;
+        });
+      }
     }
   }
 
@@ -175,7 +182,7 @@ class _CustomerPortalScreenState extends State<CustomerPortalScreen> {
                         builder: (context, constraints) {
                           final wide = constraints.maxWidth >= 850;
                           final plans = _PlansCard(
-                            loading: _isLoading,
+                            buyingAmount: _buyingAmount,
                             onBuy: _buyPower,
                           );
                           const device = _DeviceCard();
@@ -194,7 +201,10 @@ class _CustomerPortalScreenState extends State<CustomerPortalScreen> {
                               const SizedBox(width: 22),
                               Expanded(
                                 flex: 6,
-                                child: _PlansCard(loading: _isLoading, onBuy: _buyPower),
+                                child: _PlansCard(
+                                  buyingAmount: _buyingAmount,
+                                  onBuy: _buyPower,
+                                ),
                               ),
                             ],
                           );
@@ -369,8 +379,8 @@ class _DeviceCard extends StatelessWidget {
 }
 
 class _PlansCard extends StatelessWidget {
-  const _PlansCard({required this.loading, required this.onBuy});
-  final bool loading;
+  const _PlansCard({required this.buyingAmount, required this.onBuy});
+  final int? buyingAmount;
   final ValueChanged<int> onBuy;
 
   @override
@@ -388,7 +398,7 @@ class _PlansCard extends StatelessWidget {
               period: '1 day access',
               price: '₦1,000',
               icon: Icons.wb_sunny_outlined,
-              onPressed: loading ? null : () => onBuy(1000),
+              onPressed: buyingAmount == 1000 ? null : () => onBuy(1000),
             );
             final week = _PlanTile(
               title: 'Weekly power',
@@ -396,7 +406,7 @@ class _PlansCard extends StatelessWidget {
               price: '₦7,000',
               icon: Icons.calendar_month_outlined,
               featured: true,
-              onPressed: loading ? null : () => onBuy(7000),
+              onPressed: buyingAmount == 7000 ? null : () => onBuy(7000),
             );
             return stack
                 ? Column(children: [day, const SizedBox(height: 14), week])
