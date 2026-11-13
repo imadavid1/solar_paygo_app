@@ -57,4 +57,26 @@ class ProviderService {
         .map((item) => PaymentRecord.fromJson(item))
         .toList();
   }
+  Future<void> assignDevice({
+  required int deviceId,
+  required int customerId,
+}) async {
+  final response = await http
+      .patch(
+        Uri.parse(
+          '${ApiConfig.baseUrl}/provider/devices/$deviceId/assign',
+        ),
+        headers: _headers,
+        body: jsonEncode({
+          'customer_id': customerId,
+        }),
+      )
+      .timeout(const Duration(seconds: 30));
+
+  final data = jsonDecode(response.body);
+
+  if (response.statusCode != 200) {
+    throw Exception(data['detail'] ?? 'Unable to assign device');
+  }
+}
 }

@@ -1,3 +1,5 @@
+import 'package:solar_paygo_app/l10n/solar_language.dart';
+import '../widgets/imad_id_logo.dart';
 import 'package:flutter/material.dart';
 
 import '../models/auth_session.dart';
@@ -12,9 +14,8 @@ class ProviderLoginScreen extends StatefulWidget {
 }
 
 class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
-  static const navy = Color(0xFF071D2B);
-  static const green = Color(0xFF0B7A55);
-  static const lime = Color(0xFFA8D94F);
+  static const navy = Color(0xFF102F46);
+  static const lime = Color(0xFF78CBE5);
 
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -56,8 +57,9 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    SolarLanguage.watch(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F6F4),
+      backgroundColor: const Color(0xFFFFFFFF),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final wide = constraints.maxWidth >= 900;
@@ -76,7 +78,10 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
     return SafeArea(
       child: Center(
         child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: wide ? 64 : 24, vertical: 32),
+          padding: EdgeInsets.symmetric(
+            horizontal: wide ? 64 : 24,
+            vertical: 32,
+          ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 460),
             child: Form(
@@ -88,7 +93,7 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
                     const _CompactBrand(),
                     const SizedBox(height: 46),
                   ],
-                  const Text(
+                  const SolarText(
                     'Welcome back',
                     style: TextStyle(
                       color: navy,
@@ -99,9 +104,13 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  Text(
+                  SolarText(
                     'Sign in to manage customers, solar devices and payments.',
-                    style: TextStyle(color: Colors.blueGrey.shade600, fontSize: 15, height: 1.5),
+                    style: TextStyle(
+                      color: Colors.blueGrey.shade600,
+                      fontSize: 15,
+                      height: 1.5,
+                    ),
                   ),
                   const SizedBox(height: 34),
                   const _FieldLabel('Email address'),
@@ -110,16 +119,17 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     autofillHints: const [AutofillHints.email],
-                    decoration: const InputDecoration(
+                    decoration: const SolarInputDecoration(
                       hintText: 'provider@example.com',
                       prefixIcon: Icon(Icons.mail_outline_rounded),
                     ),
-                    validator: (value) {
+                    validator: SolarLanguage.validation<String>((value) {
                       final email = value?.trim() ?? '';
                       if (email.isEmpty) return 'Enter your email address';
-                      if (!email.contains('@')) return 'Enter a valid email address';
+                      if (!email.contains('@'))
+                        return 'Enter a valid email address';
                       return null;
-                    },
+                    }),
                   ),
                   const SizedBox(height: 20),
                   const _FieldLabel('Password'),
@@ -129,16 +139,25 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
                     obscureText: _hidePassword,
                     autofillHints: const [AutofillHints.password],
                     onFieldSubmitted: (_) => _login(),
-                    decoration: InputDecoration(
+                    decoration: SolarInputDecoration(
                       hintText: 'Enter your password',
                       prefixIcon: const Icon(Icons.lock_outline_rounded),
                       suffixIcon: IconButton(
-                        tooltip: _hidePassword ? 'Show password' : 'Hide password',
-                        onPressed: () => setState(() => _hidePassword = !_hidePassword),
-                        icon: Icon(_hidePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                        tooltip: SolarLanguage.instance.translate(_hidePassword
+                            ? 'Show password'
+                            : 'Hide password'),
+                        onPressed: () =>
+                            setState(() => _hidePassword = !_hidePassword),
+                        icon: Icon(
+                          _hidePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                        ),
                       ),
                     ),
-                    validator: (value) => value == null || value.isEmpty ? 'Enter your password' : null,
+                    validator: SolarLanguage.validation<String>((value) => value == null || value.isEmpty
+                        ? 'Enter your password'
+                        : null),
                   ),
                   if (_error != null) ...[
                     const SizedBox(height: 18),
@@ -153,9 +172,18 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.error_outline, color: Color(0xFFB42318), size: 20),
+                          const Icon(
+                            Icons.error_outline,
+                            color: Color(0xFFB42318),
+                            size: 20,
+                          ),
                           const SizedBox(width: 10),
-                          Expanded(child: Text(_error!, style: const TextStyle(color: Color(0xFF8A1C13)))),
+                          Expanded(
+                            child: SolarText(
+                              _error!,
+                              style: const TextStyle(color: Color(0xFF8A1C13)),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -167,20 +195,31 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
                     child: FilledButton(
                       onPressed: _isLoading ? null : _login,
                       style: FilledButton.styleFrom(
-                        backgroundColor: green,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        backgroundColor: lime,
+                        foregroundColor: navy,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: _isLoading
                           ? const SizedBox(
                               width: 22,
                               height: 22,
-                              child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.4,
+                                color: navy,
+                              ),
                             )
                           : const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text('Sign in securely', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                                SolarText(
+                                  'Sign in securely',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 15,
+                                  ),
+                                ),
                                 SizedBox(width: 10),
                                 Icon(Icons.arrow_forward_rounded, size: 20),
                               ],
@@ -191,9 +230,19 @@ class _ProviderLoginScreenState extends State<ProviderLoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.shield_outlined, size: 17, color: Colors.blueGrey.shade500),
+                      Icon(
+                        Icons.shield_outlined,
+                        size: 17,
+                        color: Colors.blueGrey.shade500,
+                      ),
                       const SizedBox(width: 7),
-                      Text('Protected provider access', style: TextStyle(color: Colors.blueGrey.shade600, fontSize: 13)),
+                      SolarText(
+                        'Protected provider access',
+                        style: TextStyle(
+                          color: Colors.blueGrey.shade600,
+                          fontSize: 13,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -210,19 +259,28 @@ class _BrandPanel extends StatelessWidget {
   const _BrandPanel();
   @override
   Widget build(BuildContext context) {
+    SolarLanguage.watch(context);
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF061A27), Color(0xFF0B463C), Color(0xFF0B7A55)],
+          colors: [Color(0xFF102F46), Color(0xFF163C55), Color(0xFF214E68)],
           stops: [0, .62, 1],
         ),
       ),
       child: Stack(
         children: [
-          Positioned(top: -100, right: -80, child: _glow(310, const Color(0x22A8D94F))),
-          Positioned(bottom: -140, left: -100, child: _glow(380, const Color(0x1800D9A3))),
+          Positioned(
+            top: -100,
+            right: -80,
+            child: _glow(310, const Color(0x3378CBE5)),
+          ),
+          Positioned(
+            bottom: -140,
+            left: -100,
+            child: _glow(380, const Color(0x1878CBE5)),
+          ),
           const Padding(
             padding: EdgeInsets.all(64),
             child: Column(
@@ -232,22 +290,39 @@ class _BrandPanel extends StatelessWidget {
                   children: [
                     _LogoMark(size: 48),
                     SizedBox(width: 14),
-                    Text('Nigeria Solar PAYGO', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 19)),
+                    SolarText(
+                      'SolarID',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 19,
+                      ),
+                    ),
                   ],
                 ),
                 Spacer(),
                 _PanelLabel(),
                 SizedBox(height: 22),
-                Text(
+                SolarText(
                   'Powering access.\nManaging impact.',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 48, height: 1.08, letterSpacing: -1.6),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 48,
+                    height: 1.08,
+                    letterSpacing: -1.6,
+                  ),
                 ),
                 SizedBox(height: 20),
                 SizedBox(
                   width: 470,
-                  child: Text(
+                  child: SolarText(
                     'A secure, real-time view of your customers, connected solar systems and PAYGO operations.',
-                    style: TextStyle(color: Color(0xFFBCD0C9), fontSize: 17, height: 1.55),
+                    style: TextStyle(
+                      color: Color(0xFFE0EFF7),
+                      fontSize: 17,
+                      height: 1.55,
+                    ),
                   ),
                 ),
                 SizedBox(height: 42),
@@ -255,13 +330,25 @@ class _BrandPanel extends StatelessWidget {
                   spacing: 14,
                   runSpacing: 14,
                   children: [
-                    _FeaturePill(icon: Icons.bolt_rounded, label: 'Live operations'),
-                    _FeaturePill(icon: Icons.verified_user_outlined, label: 'Secure access'),
-                    _FeaturePill(icon: Icons.insights_rounded, label: 'Clear insights'),
+                    _FeaturePill(
+                      icon: Icons.bolt_rounded,
+                      label: 'Live operations',
+                    ),
+                    _FeaturePill(
+                      icon: Icons.verified_user_outlined,
+                      label: 'Secure access',
+                    ),
+                    _FeaturePill(
+                      icon: Icons.insights_rounded,
+                      label: 'Clear insights',
+                    ),
                   ],
                 ),
                 Spacer(),
-                Text('Reliable energy management for a brighter Nigeria.', style: TextStyle(color: Color(0xFF9CB5AD), fontSize: 13)),
+                SolarText(
+                  'Reliable energy management for a brighter Nigeria.',
+                  style: TextStyle(color: Color(0xFFC9DFEB), fontSize: 13),
+                ),
               ],
             ),
           ),
@@ -271,38 +358,51 @@ class _BrandPanel extends StatelessWidget {
   }
 
   static Widget _glow(double size, Color color) => Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-      );
+    width: size,
+    height: size,
+    decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+  );
 }
 
 class _PanelLabel extends StatelessWidget {
   const _PanelLabel();
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        decoration: BoxDecoration(
-          color: const Color(0x22FFFFFF),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: const Color(0x33FFFFFF)),
-        ),
-        child: const Text(
-          'PROVIDER COMMAND CENTRE',
-          style: TextStyle(color: _ProviderLoginScreenState.lime, fontWeight: FontWeight.w700, fontSize: 11, letterSpacing: 1.4),
-        ),
-      );
+  Widget build(BuildContext context) { SolarLanguage.watch(context); return  Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+    decoration: BoxDecoration(
+      color: const Color(0x22FFFFFF),
+      borderRadius: BorderRadius.circular(30),
+      border: Border.all(color: const Color(0x33FFFFFF)),
+    ),
+    child: const SolarText(
+      'PROVIDER COMMAND CENTRE',
+      style: TextStyle(
+        color: _ProviderLoginScreenState.lime,
+        fontWeight: FontWeight.w700,
+        fontSize: 11,
+        letterSpacing: 1.4,
+      ),
+    ),
+  ); }
 }
 
 class _CompactBrand extends StatelessWidget {
   const _CompactBrand();
   @override
   Widget build(BuildContext context) {
+    SolarLanguage.watch(context);
     return const Row(
       children: [
         _LogoMark(size: 44),
         SizedBox(width: 12),
-        Text('Nigeria Solar PAYGO', style: TextStyle(color: _ProviderLoginScreenState.navy, fontSize: 17, fontWeight: FontWeight.w800)),
+        SolarText(
+          'SolarID',
+          style: TextStyle(
+            color: _ProviderLoginScreenState.navy,
+            fontSize: 17,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
       ],
     );
   }
@@ -313,12 +413,8 @@ class _LogoMark extends StatelessWidget {
   const _LogoMark({required this.size});
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(color: _ProviderLoginScreenState.lime, borderRadius: BorderRadius.circular(size * .28)),
-      child: Icon(Icons.solar_power_rounded, color: _ProviderLoginScreenState.navy, size: size * .58),
-    );
+    SolarLanguage.watch(context);
+    return ImadIdLogo(size: size);
   }
 }
 
@@ -328,6 +424,7 @@ class _FeaturePill extends StatelessWidget {
   const _FeaturePill({required this.icon, required this.label});
   @override
   Widget build(BuildContext context) {
+    SolarLanguage.watch(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
       decoration: BoxDecoration(
@@ -340,7 +437,10 @@ class _FeaturePill extends StatelessWidget {
         children: [
           Icon(icon, size: 18, color: _ProviderLoginScreenState.lime),
           const SizedBox(width: 8),
-          Text(label, style: const TextStyle(color: Colors.white, fontSize: 13)),
+          SolarText(
+            label,
+            style: const TextStyle(color: Colors.white, fontSize: 13),
+          ),
         ],
       ),
     );
@@ -351,8 +451,12 @@ class _FieldLabel extends StatelessWidget {
   final String text;
   const _FieldLabel(this.text);
   @override
-  Widget build(BuildContext context) => Text(
-        text,
-        style: const TextStyle(color: _ProviderLoginScreenState.navy, fontWeight: FontWeight.w700, fontSize: 13),
-      );
+  Widget build(BuildContext context) { SolarLanguage.watch(context); return  SolarText(
+    text,
+    style: const TextStyle(
+      color: _ProviderLoginScreenState.navy,
+      fontWeight: FontWeight.w700,
+      fontSize: 13,
+    ),
+  ); }
 }

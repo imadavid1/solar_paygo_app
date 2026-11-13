@@ -24,4 +24,5 @@ class AuthSession {
   }
 
   bool get isProvider => role.toLowerCase() == 'provider';
+  bool get isCustomer => role.toLowerCase() == 'customer';
 }

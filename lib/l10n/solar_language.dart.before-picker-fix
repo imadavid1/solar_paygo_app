@@ -1,0 +1,93 @@
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'catalogue.dart';
+
+/// Language affects presentation only. Checkout and device logic stay unchanged.
+class SolarLanguage extends ChangeNotifier {
+  SolarLanguage._();
+  static final instance = SolarLanguage._();
+  static const names = {'en': 'English', 'ha': 'Hausa', 'yo': 'Yorùbá', 'ig': 'Igbo', 'pcm': 'Nigerian Pidgin'};
+  String code = 'en';
+  Future<void> restore() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString('solarid_language');
+      if (names.containsKey(saved)) code = saved!;
+    } catch (_) { /* English remains available if storage is unavailable. */ }
+  }
+  Future<void> select(String value) async {
+    if (!names.containsKey(value) || value == code) return;
+    code = value;
+    notifyListeners();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('solarid_language', value);
+    } catch (_) { /* The current selection still works for this session. */ }
+  }
+  String translate(String value) {
+    final key = value.replaceAll(RegExp(r'\s+'), ' ').trim();
+    return solarTranslations[key]?[code] ?? value;
+  }
+}
+
+/// A Text-compatible widget keeps const call sites and existing layout styling.
+/// Each label listens independently so changing language preserves page state.
+class SolarText extends Text {
+  const SolarText(super.data, {
+    super.key, super.style, super.strutStyle, super.textAlign,
+    super.textDirection, super.locale, super.softWrap, super.overflow,
+    super.textScaleFactor, super.textScaler, super.maxLines,
+    super.semanticsLabel, super.textWidthBasis, super.textHeightBehavior,
+    super.selectionColor,
+  });
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: SolarLanguage.instance,
+    builder: (context, _) => Text(
+      SolarLanguage.instance.translate(data ?? ''),
+      style: style, strutStyle: strutStyle, textAlign: textAlign,
+      textDirection: textDirection, locale: locale, softWrap: softWrap,
+      overflow: overflow, textScaleFactor: textScaleFactor,
+      textScaler: textScaler, maxLines: maxLines,
+      semanticsLabel: semanticsLabel == null ? null : SolarLanguage.instance.translate(semanticsLabel!),
+      textWidthBasis: textWidthBasis, textHeightBehavior: textHeightBehavior,
+      selectionColor: selectionColor,
+    ),
+  );
+}
+
+/// A compact, dedicated toolbar above every route, including account pages.
+/// Keeping it outside the Navigator avoids duplicating controls in each screen.
+class LanguageFrame extends StatelessWidget {
+  const LanguageFrame({super.key, required this.child});
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => Column(children: [
+    Material(
+      color: const Color(0xFF102F46),
+      child: SafeArea(bottom: false, child: SizedBox(
+        height: 42,
+        child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+          const Icon(Icons.language, color: Colors.white, size: 19),
+          const SizedBox(width: 8),
+          AnimatedBuilder(
+            animation: SolarLanguage.instance,
+            builder: (context, _) => DropdownButtonHideUnderline(child: DropdownButton<String>(
+              value: SolarLanguage.instance.code,
+              dropdownColor: const Color(0xFF102F46),
+              iconEnabledColor: Colors.white,
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              items: SolarLanguage.names.entries.map((e) => DropdownMenuItem(
+                value: e.key, child: Text(e.value),
+              )).toList(),
+              onChanged: (value) { if (value != null) SolarLanguage.instance.select(value); },
+            )),
+          ),
+          const SizedBox(width: 12),
+        ]),
+      )),
+    ),
+    Expanded(child: child),
+  ]);
+}

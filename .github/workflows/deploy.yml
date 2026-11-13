@@ -32,7 +32,7 @@ jobs:
         run: flutter pub get
 
       - name: Build web
-        run: flutter build web --release --base-href /solar_paygo_app/
+        run: flutter build web --release --base-href /solar_paygo_app/ --dart-define=API_BASE_URL=https://solar-backend-q2fo.onrender.com --dart-define=SELLER_API_BASE_URL=https://solar-backend-q2fo.onrender.com
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

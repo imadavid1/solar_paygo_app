@@ -1,3 +1,4 @@
+import 'package:solar_paygo_app/l10n/solar_language.dart';
 import 'package:flutter/material.dart';
 
 class DashboardStatCard extends StatelessWidget {
@@ -16,6 +17,7 @@ class DashboardStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SolarLanguage.watch(context);
     return Card(
       elevation: 2,
       child: Padding(
@@ -32,14 +34,14 @@ class DashboardStatCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  SolarText(
                     value.toString(),
                     style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Text(
+                  SolarText(
                     title,
                     style: TextStyle(color: Colors.grey.shade700),
                   ),

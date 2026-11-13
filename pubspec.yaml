@@ -36,6 +36,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   http: ^1.6.0
   url_launcher: ^6.3.2
+  shared_preferences: ^2.3.2
+  video_player: ^2.11.1
+  image_picker: 1.2.4
 
 dev_dependencies:
   flutter_test:
@@ -58,6 +61,40 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/brand/
+    - assets/images/home_family_bright_v2.png
+    - assets/images/home_solar_texture_v2.png
+
+    - assets/images/career_connected_future.png
+    - assets/images/career_support.png
+    - assets/images/career_marketplace.png
+    - assets/images/career_trades.png
+    - assets/images/career_solar.png
+    - assets/images/career_team.png
+    - assets/images/learn_rooftop_installation.png
+    - assets/images/learn_inverter_engineer.png
+    - assets/images/learn_coastal_background.png
+    - assets/images/learn_professionals_hero.png
+    - assets/images/hire_workers_profiles.png
+    - assets/images/hire_workers_group.png
+    - assets/images/about_solar_installation.png
+    - assets/images/about_solar_community.png
+    - assets/images/about_imad_centre.png
+    - assets/images/catalogue/
+    - assets/images/catalogue/professionals/
+    - assets/images/benefits_family.png
+    - assets/images/home_family.png
+    - assets/images/home_residential.png
+    - assets/images/home_business.png
+    - assets/images/home_industrial.png
+    - assets/images/home_community.png
+    - assets/images/solar_home_hero.png
+    - assets/images/hire_skilled_worker.png
+    - assets/images/learn_from_professional.png
+    - assets/images/career_electrical_technician.png
+    - assets/images/career_field_support.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

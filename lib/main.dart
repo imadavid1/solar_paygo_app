@@ -1,11 +1,19 @@
+import 'package:solar_paygo_app/l10n/solar_language.dart';
 import 'package:flutter/material.dart';
 
 import 'models/auth_session.dart';
+import 'screens/customer_auth_screen.dart';
 import 'screens/customer_portal_screen.dart';
+import 'screens/landing_screen.dart';
 import 'screens/provider_dashboard_screen.dart';
 import 'screens/provider_login_screen.dart';
+import 'services/session_store.dart';
 
-void main() => runApp(const SolarApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SolarLanguage.instance.restore();
+  runApp(const SolarApp());
+}
 
 class SolarApp extends StatefulWidget {
   const SolarApp({super.key});
@@ -16,6 +24,40 @@ class SolarApp extends StatefulWidget {
 
 class _SolarAppState extends State<SolarApp> {
   AuthSession? _providerSession;
+  AuthSession? _customerSession;
+  bool _restoringSession = true;
+  bool _showCustomerAuth = false;
+  final _sessionStore = SessionStore();
+
+  @override
+  void initState() {
+    super.initState();
+    _restoreCustomerSession();
+  }
+
+  Future<void> _restoreCustomerSession() async {
+    final session = await _sessionStore.loadCustomer();
+    if (!mounted) return;
+    setState(() {
+      _customerSession = session?.isCustomer == true ? session : null;
+      _restoringSession = false;
+    });
+  }
+
+  Future<void> _setCustomerSession(AuthSession session) async {
+    await _sessionStore.saveCustomer(session);
+    if (mounted) setState(() => _customerSession = session);
+  }
+
+  Future<void> _logoutCustomer() async {
+    await _sessionStore.clearCustomer();
+    if (mounted) {
+      setState(() {
+        _customerSession = null;
+        _showCustomerAuth = false;
+      });
+    }
+  }
 
   bool get _isProviderPortal {
     return Uri.base.queryParameters['portal'] == 'provider';
@@ -23,17 +65,20 @@ class _SolarAppState extends State<SolarApp> {
 
   @override
   Widget build(BuildContext context) {
+    SolarLanguage.watch(context);
     return MaterialApp(
-      title: 'Nigeria Solar PAYGO',
+      title: 'SolarID',
+      navigatorKey: solarNavigatorKey,
+      builder: (context, child) => SolarLanguageScope(child: LanguageFrame(child: child ?? const SizedBox.shrink())),
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF0B6E4F),
-          primary: const Color(0xFF0B7A55),
+          seedColor: const Color(0xFFD8F3FB),
+          primary: const Color(0xFF111111),
           surface: Colors.white,
         ),
         useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFFF3F6F5),
+        scaffoldBackgroundColor: const Color(0xFFF7F5EE),
         fontFamily: 'Segoe UI',
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
@@ -44,23 +89,23 @@ class _SolarAppState extends State<SolarApp> {
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFD9E3DF)),
+            borderSide: const BorderSide(color: Color(0xFFD8D6CE)),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFD9E3DF)),
+            borderSide: const BorderSide(color: Color(0xFFD8D6CE)),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(
-              color: Color(0xFF0B7A55),
+              color: Color(0xFF111111),
               width: 1.5,
             ),
           ),
         ),
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
-            backgroundColor: const Color(0xFF0B7A55),
+            backgroundColor: const Color(0xFF111111),
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
@@ -85,7 +130,24 @@ class _SolarAppState extends State<SolarApp> {
                     });
                   },
                 )
-          : const CustomerPortalScreen(),
+          : _restoringSession
+              ? const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                )
+              : _customerSession == null
+                  ? _showCustomerAuth
+                      ? CustomerAuthScreen(
+                          onAuthenticated: _setCustomerSession,
+                          onBack: () => setState(() => _showCustomerAuth = false),
+                        )
+                      : LandingScreen(
+                          onCustomerAccess: () =>
+                              setState(() => _showCustomerAuth = true),
+                        )
+                  : CustomerPortalScreen(
+                      session: _customerSession!,
+                      onLogout: _logoutCustomer,
+                    ),
     );
   }
 }
